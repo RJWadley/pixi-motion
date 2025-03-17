@@ -19,7 +19,7 @@
 		"format": "biome check --write",
 		"check-format": "biome check",
 		"check-exports": "attw --pack . --ignore-rules=cjs-resolves-to-esm",
-		"local-release": "changeset version && changeset publish",
+		"local-release": "changeset version && biome check --write package.json && changeset publish",
 		"prepublishOnly": "npm run ci"
 	},
 	"peerDependencies": {
