@@ -1,18 +1,38 @@
 {
-  "name": "pixi-motion",
-  "version": "0.0.0",
-  "description": "motion/react integration for @pixi/react",
-  "keywords": ["pixi", "react", "motion", "animation"],
-  "homepage": "https://github.com/RJWadley/pixi-motion",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/RJWadley/pixi-motion/issues"
-  },
-  "author": "Robbie Wadley (https://github.com/RJWadley)",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/RJWadley/pixi-motion.git"
-  },
-  "files": ["dist"],
-  "type": "module"
+	"name": "pixi-motion",
+	"version": "0.0.0",
+	"description": "motion/react integration for @pixi/react",
+	"keywords": ["pixi", "react", "motion", "animation"],
+	"homepage": "https://github.com/RJWadley/pixi-motion",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/RJWadley/pixi-motion/issues"
+	},
+	"author": "Robbie Wadley (https://github.com/RJWadley)",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/RJWadley/pixi-motion.git"
+	},
+	"scripts": {
+		"build": "tsc",
+		"ci": "pnpm run build && pnpm run check-format && pnpm run check-exports",
+		"format": "biome check --write",
+		"check-format": "biome check",
+		"check-exports": "attw --pack . --ignore-rules=cjs-resolves-to-esm",
+		"local-release": "changeset version && changeset publish",
+		"prepublishOnly": "npm run ci"
+	},
+	"devDependencies": {
+		"@arethetypeswrong/cli": "^0.17.4",
+		"@biomejs/biome": "^1.9.4",
+		"@changesets/cli": "^2.28.1",
+		"typescript": "^5.8.2"
+	},
+	"main": "dist/index.js",
+	"files": ["dist"],
+	"type": "module",
+	"packageManager": "pnpm@10.6.3+sha512.bb45e34d50a9a76e858a95837301bfb6bd6d35aea2c5d52094fa497a467c43f5c440103ce2511e9e0a2f89c3d6071baac3358fc68ac6fb75e2ceb3d2736065e6",
+	"pnpm": {
+		"onlyBuiltDependencies": ["@biomejs/biome"]
+	}
 }
