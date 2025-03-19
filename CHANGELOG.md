@@ -1,5 +1,11 @@
 # pixi-motion
 
+## 0.1.3
+
+### Patch Changes
+
+- 7cd5120: improved the way refs are handled
+
 ## 0.1.2
 
 ### Patch Changes
