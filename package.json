@@ -24,7 +24,7 @@
     "format": "biome check --write",
     "check-format": "biome check",
     "check-exports": "attw --pack . --ignore-rules=cjs-resolves-to-esm",
-    "local-release": "changeset version && biome check --write package.json && changeset publish",
+    "local-release": "changeset version && changeset publish",
     "prepublishOnly": "pnpm run ci",
     "dev": "pnpm run --filter=sandbox dev"
   },
