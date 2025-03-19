@@ -14,28 +14,30 @@ import {
 	useRef,
 } from "react"
 import { useCombinedRefs } from "./useCombinedRefs.js"
-import { useCompareEffect } from "./useDeepCompareEffect.js"
+import { useCompareEffect } from "./useCompareEffect.js"
 import { useLatestFunction } from "./useLatestFunction.js"
 
-type BasicProps =
-	| "alpha"
-	| "angle"
-	| "rotation"
-	| "x"
-	| "y"
-	| "width"
-	| "height"
-
-type NestedProps = "scale" | "pivot" | "position" | "skew"
-
-type AllProps = BasicProps | NestedProps
+const BasicProps = [
+	"alpha",
+	"angle",
+	"rotation",
+	"x",
+	"y",
+	"width",
+	"height",
+] as const
+type BasicProps = (typeof BasicProps)[number]
+const NestedProps = ["scale", "pivot", "position", "skew"] as const
+type NestedProps = (typeof NestedProps)[number]
+const SupportedProps = [...BasicProps, ...NestedProps] as const
+type SupportedProps = (typeof SupportedProps)[number]
 
 /**
  * elements that accept all the above properties
  */
 export type SupportedElements = keyof {
 	[K in keyof PixiElements as Required<PixiElements[K]> extends Record<
-		AllProps,
+		SupportedProps,
 		unknown
 	>
 		? PixiElements[K] extends never
@@ -45,11 +47,11 @@ export type SupportedElements = keyof {
 }
 
 type SupportedValues = {
-	[K in AllProps]: ComponentProps<SupportedElements>[K]
+	[K in SupportedProps]: ComponentProps<SupportedElements>[K]
 }
 
 type PropertyTransitions = {
-	[K in AllProps]?: ValueAnimationTransition
+	[K in SupportedProps]?: ValueAnimationTransition
 } & ValueAnimationTransition
 
 type WithMotionProps<Props> = Props & {
@@ -65,22 +67,8 @@ export type PixiMotionComponent<TagName extends SupportedElements> = (
 const filterTransition = (transition: ValueAnimationTransition | undefined) => {
 	if (transition === undefined) return undefined
 
-	const keysToRemove = {
-		alpha: 0,
-		angle: 0,
-		rotation: 0,
-		x: 0,
-		y: 0,
-		width: 0,
-		height: 0,
-		scale: 0,
-		pivot: 0,
-		skew: 0,
-		position: 0,
-	} satisfies Record<AllProps, 0>
-
 	const withRemovedKeys = Object.fromEntries(
-		Object.entries(transition).filter(([key]) => !(key in keysToRemove)),
+		Object.entries(transition).filter(([key]) => !(key in SupportedProps)),
 	)
 
 	if (Object.keys(withRemovedKeys).length === 0) return undefined
@@ -90,25 +78,13 @@ const filterTransition = (transition: ValueAnimationTransition | undefined) => {
 export function createMotionComponent<TagName extends SupportedElements>(
 	Component: TagName,
 ): PixiMotionComponent<TagName> {
-	return function MotionComponent(combinedProps) {
-		const {
-			alpha,
-			angle,
-			rotation,
-			x,
-			y,
-			width,
-			height,
-			scale,
-			pivot,
-			position,
-			skew,
-			initial,
-			animate,
-			ref: userRef,
-			transition,
-			...props
-		} = combinedProps
+	return function MotionComponent({
+		initial,
+		animate,
+		ref: userRef,
+		transition,
+		...props
+	}) {
 		const ref = useRef<PixiElements[TagName]>(null)
 		const outputRef = useCombinedRefs(ref, userRef as typeof ref)
 		const firstRenderRef = useRef(true)
@@ -119,14 +95,14 @@ export function createMotionComponent<TagName extends SupportedElements>(
 		 * get the transition options for a particular property
 		 */
 		const getTransitionDetails = useLatestFunction(
-			(property: AllProps): ValueAnimationTransition | undefined => {
+			(property: SupportedProps): ValueAnimationTransition | undefined => {
 				// extract from the animate property
-				const scopedVague = combinedProps.animate?.transition
-				const scopedSpecific = combinedProps.animate?.transition?.[property]
+				const scopedVague = animate?.transition
+				const scopedSpecific = animate?.transition?.[property]
 
 				// extract from the transition property
-				const transitionPropertyVague = combinedProps.transition
-				const transitionPropertySpecific = combinedProps.transition?.[property]
+				const transitionPropertyVague = transition
+				const transitionPropertySpecific = transition?.[property]
 
 				// extract from motion config
 				const motionConfigVague = defaultTransition
@@ -149,19 +125,17 @@ export function createMotionComponent<TagName extends SupportedElements>(
 		 *
 		 * the priority matters here: initial always wins, then prefer props over animate
 		 */
-		const useInitialState = (key: AllProps) => {
-			return useRef(initial?.[key] ?? combinedProps[key] ?? animate?.[key])
-				.current
+		const useInitialState = (key: SupportedProps) => {
+			return useRef(initial?.[key] ?? props[key] ?? animate?.[key]).current
 		}
 
 		/**
 		 * animate to a certain state
 		 */
 		const to = useCallback(
-			<T extends AllProps>(key: T, value?: SupportedValues[T]) => {
+			(key: SupportedProps, value?: SupportedValues[SupportedProps]) => {
 				if (value === undefined) return
-				if (!ref.current)
-					throw new Error("attempted to animate an unmounted component")
+				if (!ref.current) return
 
 				const transition = getTransitionDetails(key)
 
@@ -185,11 +159,10 @@ export function createMotionComponent<TagName extends SupportedElements>(
 		 * instantly jump to a certain state, interrupting any running animations
 		 */
 		const set = useCallback(
-			<T extends AllProps>(key: T, value?: SupportedValues[T]) => {
+			<T extends SupportedProps>(key: T, value?: SupportedValues[T]) => {
 				if (value === undefined) return
 				if (firstRenderRef.current) return
-				if (!ref.current)
-					throw new Error("attempted to animate an unmounted component")
+				if (!ref.current) return
 
 				// @ts-expect-error propably not possible to narrow, but types will catch it
 				ref.current[key] = value
@@ -197,53 +170,23 @@ export function createMotionComponent<TagName extends SupportedElements>(
 			[],
 		)
 
-		/**
-		 * track our initial values, which never change after mount
-		 */
-		const initialAlpha = useInitialState("alpha")
-		const initialAngle = useInitialState("angle")
-		const initialRotation = useInitialState("rotation")
-		const initialX = useInitialState("x")
-		const initialY = useInitialState("y")
-		const initialWidth = useInitialState("width")
-		const initialHeight = useInitialState("height")
-		const initialScale = useInitialState("scale")
-		const initialPivot = useInitialState("pivot")
-		const initialSkew = useInitialState("skew")
-		const initialPosition = useInitialState("position")
-
-		/**
-		 * instantly jump to a new value when that prop changes
-		 */
-		useEffect(() => set("alpha", alpha), [set, alpha])
-		useEffect(() => set("angle", angle), [set, angle])
-		useEffect(() => set("rotation", rotation), [set, rotation])
-		useEffect(() => set("x", x), [set, x])
-		useEffect(() => set("y", y), [set, y])
-		useEffect(() => set("width", width), [set, width])
-		useEffect(() => set("height", height), [set, height])
-		useCompareEffect(() => set("scale", scale), [set, scale])
-		useCompareEffect(() => set("pivot", pivot), [set, pivot])
-		useCompareEffect(() => set("skew", skew), [set, skew])
-		useCompareEffect(() => set("position", position), [set, position])
-
-		/**
-		 * animate our values when they change
-		 */
-		useEffect(() => to("alpha", animate?.alpha), [to, animate?.alpha])
-		useEffect(() => to("angle", animate?.angle), [to, animate?.angle])
-		useEffect(() => to("rotation", animate?.rotation), [to, animate?.rotation])
-		useEffect(() => to("x", animate?.x), [to, animate?.x])
-		useEffect(() => to("y", animate?.y), [to, animate?.y])
-		useEffect(() => to("width", animate?.width), [to, animate?.width])
-		useEffect(() => to("height", animate?.height), [to, animate?.height])
-		useCompareEffect(() => to("scale", animate?.scale), [to, animate?.scale])
-		useCompareEffect(() => to("pivot", animate?.pivot), [to, animate?.pivot])
-		useCompareEffect(() => to("skew", animate?.skew), [to, animate?.skew])
-		useCompareEffect(
-			() => to("position", animate?.position),
-			[to, animate?.position],
-		)
+		const initialProps: Partial<
+			Record<SupportedProps, SupportedValues[SupportedProps]>
+		> = {}
+		for (const key of SupportedProps) {
+			/**
+			 * track our initial values, which never change after mount
+			 */
+			initialProps[key] = useInitialState(key)
+			/**
+			 * instantly jump to a new value when that prop changes
+			 */
+			useCompareEffect(() => set(key), [set, props[key]])
+			/**
+			 * animate our values when they change
+			 */
+			useCompareEffect(() => to(key, animate?.[key]), [to, animate?.[key]])
+		}
 
 		/**
 		 * this effect must be last, or it won't be usable in our other effects
@@ -253,19 +196,9 @@ export function createMotionComponent<TagName extends SupportedElements>(
 		}, [])
 
 		return createElement(Component, {
-			ref: outputRef,
-			alpha: initialAlpha,
-			angle: initialAngle,
-			rotation: initialRotation,
-			x: initialX,
-			y: initialY,
-			width: initialWidth,
-			height: initialHeight,
-			scale: initialScale,
-			pivot: initialPivot,
-			skew: initialSkew,
-			position: initialPosition,
 			...props,
+			...initialProps,
+			ref: outputRef,
 		})
 	}
 }
