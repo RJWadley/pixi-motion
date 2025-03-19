@@ -1,1 +1,4 @@
-export { MotionContainer } from "./MotionContainer.js"
+import * as pixiMotion from "./elements.js"
+
+export default pixiMotion
+export { pixiMotion }
