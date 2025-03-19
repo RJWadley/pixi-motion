@@ -13,8 +13,8 @@ import {
 	useEffect,
 	useRef,
 } from "react"
-import { useDeepCompareEffect } from "use-deep-compare"
 import { useCombinedRefs } from "./useCombinedRefs.js"
+import { useCompareEffect } from "./useDeepCompareEffect.js"
 import { useLatestFunction } from "./useLatestFunction.js"
 
 type BasicProps =
@@ -222,10 +222,10 @@ export function createMotionComponent<TagName extends SupportedElements>(
 		useEffect(() => set("y", y), [set, y])
 		useEffect(() => set("width", width), [set, width])
 		useEffect(() => set("height", height), [set, height])
-		useDeepCompareEffect(() => set("scale", scale), [set, scale])
-		useDeepCompareEffect(() => set("pivot", pivot), [set, pivot])
-		useDeepCompareEffect(() => set("skew", skew), [set, skew])
-		useDeepCompareEffect(() => set("position", position), [set, position])
+		useCompareEffect(() => set("scale", scale), [set, scale])
+		useCompareEffect(() => set("pivot", pivot), [set, pivot])
+		useCompareEffect(() => set("skew", skew), [set, skew])
+		useCompareEffect(() => set("position", position), [set, position])
 
 		/**
 		 * animate our values when they change
@@ -237,16 +237,10 @@ export function createMotionComponent<TagName extends SupportedElements>(
 		useEffect(() => to("y", animate?.y), [to, animate?.y])
 		useEffect(() => to("width", animate?.width), [to, animate?.width])
 		useEffect(() => to("height", animate?.height), [to, animate?.height])
-		useDeepCompareEffect(
-			() => to("scale", animate?.scale),
-			[to, animate?.scale],
-		)
-		useDeepCompareEffect(
-			() => to("pivot", animate?.pivot),
-			[to, animate?.pivot],
-		)
-		useDeepCompareEffect(() => to("skew", animate?.skew), [to, animate?.skew])
-		useDeepCompareEffect(
+		useCompareEffect(() => to("scale", animate?.scale), [to, animate?.scale])
+		useCompareEffect(() => to("pivot", animate?.pivot), [to, animate?.pivot])
+		useCompareEffect(() => to("skew", animate?.skew), [to, animate?.skew])
+		useCompareEffect(
 			() => to("position", animate?.position),
 			[to, animate?.position],
 		)
