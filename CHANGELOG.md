@@ -1,5 +1,11 @@
 # pixi-motion
 
+## 0.1.2
+
+### Patch Changes
+
+- 72f3be0: optimize bundle size
+
 ## 0.1.1
 
 ### Patch Changes
