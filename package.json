@@ -1,8 +1,13 @@
 {
 	"name": "pixi-motion",
-	"version": "0.0.1",
+	"version": "0.1.0",
 	"description": "motion/react integration for @pixi/react",
-	"keywords": ["pixi", "react", "motion", "animation"],
+	"keywords": [
+		"pixi",
+		"react",
+		"motion",
+		"animation"
+	],
 	"homepage": "https://github.com/RJWadley/pixi-motion",
 	"license": "MIT",
 	"bugs": {
@@ -42,10 +47,17 @@
 		"typescript": "^5.8.2"
 	},
 	"main": "dist/index.js",
-	"files": ["dist", "src"],
+	"files": [
+		"dist",
+		"src"
+	],
 	"type": "module",
 	"packageManager": "pnpm@10.6.4",
 	"pnpm": {
-		"onlyBuiltDependencies": ["@biomejs/biome", "esbuild", "sharp"]
+		"onlyBuiltDependencies": [
+			"@biomejs/biome",
+			"esbuild",
+			"sharp"
+		]
 	}
 }
