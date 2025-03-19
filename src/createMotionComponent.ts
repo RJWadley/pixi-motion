@@ -11,9 +11,9 @@ import {
 	use,
 	useCallback,
 	useEffect,
+	useImperativeHandle,
 	useRef,
 } from "react"
-import { useCombinedRefs } from "./useCombinedRefs.js"
 import { useCompareEffect } from "./useCompareEffect.js"
 import { useLatestFunction } from "./useLatestFunction.js"
 
@@ -86,7 +86,10 @@ export function createMotionComponent<TagName extends SupportedElements>(
 		...props
 	}) {
 		const ref = useRef<PixiElements[TagName]>(null)
-		const outputRef = useCombinedRefs(ref, userRef as typeof ref)
+		useImperativeHandle<
+			PixiElements[TagName] | null,
+			PixiElements[TagName] | null
+		>(userRef as typeof ref, () => ref.current)
 		const firstRenderRef = useRef(true)
 		const defaultTransition = use(MotionConfigContext)
 			.transition as PropertyTransitions
@@ -198,7 +201,7 @@ export function createMotionComponent<TagName extends SupportedElements>(
 		return createElement(Component, {
 			...props,
 			...initialProps,
-			ref: outputRef,
+			ref,
 		})
 	}
 }
