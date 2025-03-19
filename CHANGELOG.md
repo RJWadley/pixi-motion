@@ -1,5 +1,11 @@
 # pixi-motion
 
+## 0.1.1
+
+### Patch Changes
+
+- 8694057: decrease bundle size
+
 ## 0.1.0
 
 ### Minor Changes

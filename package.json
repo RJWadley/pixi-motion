@@ -1,6 +1,6 @@
 {
   "name": "pixi-motion",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "motion/react integration for @pixi/react",
   "keywords": [
     "pixi",
